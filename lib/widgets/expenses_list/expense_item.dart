@@ -22,10 +22,10 @@ class ExpenseItem extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-               Text( '\$${expense.amount.toStringAsFixed(2)}'),
-               const Spacer(),
-               const Icon(Icons.work),
-               Text('${expense.date}')
+                Text('\$${expense.amount.toStringAsFixed(2)}'),
+                const Spacer(),
+                Icon(categoryIcons[expense.category]),
+                Text(expense.formattedDate)
               ],
             )
           ],

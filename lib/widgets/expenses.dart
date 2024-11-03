@@ -29,6 +29,10 @@ class _ExpensesState extends State<Expenses> {
   Widget build(BuildContext context) {
     // wrap inner column with expanded widget
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Expense Tracker App'),
+        actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.add))],
+      ),
       body: Column(
         children: [
           const Text('the chart'),
