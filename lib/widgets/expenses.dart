@@ -1,5 +1,6 @@
 import 'package:expense_tracker_app/expenses_list.dart';
 import 'package:expense_tracker_app/models/expense.dart';
+import 'package:expense_tracker_app/widgets/new_expense.dart';
 import 'package:flutter/material.dart';
 
 class Expenses extends StatefulWidget {
@@ -10,37 +11,76 @@ class Expenses extends StatefulWidget {
 }
 
 class _ExpensesState extends State<Expenses> {
-  final List<Expense> _registeredExpenses = [
-    Expense(
-      title: 'flutter course',
-      amount: 120,
-      date: DateTime.now(),
-      category: Category.work,
-    ),
-    Expense(
-      title: 'tavuk döner',
-      amount: 130,
-      date: DateTime.now(),
-      category: Category.food,
-    )
-  ];
+  //when you are in a class that extends state flutter automatically adds a context property to your class.
+  // this context value holds an information about this expenses widget an also hold the place of the class in the widget tree.
+  final List<Expense> _registeredExpenses = [];
+
+  void _addExpenses(Expense expense) {
+    setState(() {
+      _registeredExpenses.add(expense);
+    });
+  }
+
+  void _removeExpenses(Expense expense) {
+    final expenseIndex = _registeredExpenses.indexOf(expense);
+
+    setState(() {
+      _registeredExpenses.remove(expense);
+    });
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 3),
+        content: const Text('Expense deleted.'),
+        action: SnackBarAction(label: 'Undo', onPressed: (){
+          setState(() {
+            _registeredExpenses.insert(expenseIndex, expense);
+          });
+        }),
+      ),
+    );
+  }
+
+  void _openAddExpenseOverlay() {
+    //builder needs a function
+    showModalBottomSheet(
+      isScrollControlled: true,
+      context: context,
+      builder: (ctx) => NewExpense(onAddExpense: _addExpenses),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    Widget mainContent = const Center(
+        child: Text(
+      'No expenses found,\nstart adding some!',
+      style: TextStyle(fontSize: 30),
+    ));
     // wrap inner column with expanded widget
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Expense Tracker App'),
-        actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.add))],
-      ),
-      body: Column(
-        children: [
-          const Text('the chart'),
-          Expanded(
-            child: ExpensesList(expenses: _registeredExpenses),
-          )
-        ],
-      ),
-    );
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: const Text('Expense Tracker App'),
+          actions: [
+            IconButton(
+              onPressed: _openAddExpenseOverlay,
+              icon: const Icon(Icons.add),
+            ),
+          ],
+        ),
+        body: (_registeredExpenses.isNotEmpty)
+            ? Column(
+                children: [
+                  const Text('the chart'),
+                  Expanded(
+                    child: ExpensesList(
+                      expenses: _registeredExpenses,
+                      deleteExpense: _removeExpenses,
+                    ),
+                  )
+                ],
+              )
+            : mainContent);
   }
 }
