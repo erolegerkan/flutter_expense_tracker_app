@@ -33,11 +33,13 @@ class _ExpensesState extends State<Expenses> {
       SnackBar(
         duration: const Duration(seconds: 3),
         content: const Text('Expense deleted.'),
-        action: SnackBarAction(label: 'Undo', onPressed: (){
-          setState(() {
-            _registeredExpenses.insert(expenseIndex, expense);
-          });
-        }),
+        action: SnackBarAction(
+            label: 'Undo',
+            onPressed: () {
+              setState(() {
+                _registeredExpenses.insert(expenseIndex, expense);
+              });
+            }),
       ),
     );
   }
@@ -45,6 +47,8 @@ class _ExpensesState extends State<Expenses> {
   void _openAddExpenseOverlay() {
     //builder needs a function
     showModalBottomSheet(
+      //to avoid device features like camera that might be affecting our ui - widgets like Scaffold widgets automatically use that feature
+      useSafeArea: true,
       isScrollControlled: true,
       context: context,
       builder: (ctx) => NewExpense(onAddExpense: _addExpenses),
@@ -53,6 +57,8 @@ class _ExpensesState extends State<Expenses> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+
     Widget mainContent = const Center(
         child: Text(
       'No expenses found,\nstart adding some!',
@@ -70,18 +76,28 @@ class _ExpensesState extends State<Expenses> {
             ),
           ],
         ),
-        body: (_registeredExpenses.isNotEmpty)
-            ? Column(
+        body: width < 600
+            ? (_registeredExpenses.isNotEmpty)
+                ? Column(children: [
+                    Chart(expenses: _registeredExpenses),
+                    Expanded(
+                      child: ExpensesList(
+                        expenses: _registeredExpenses,
+                        deleteExpense: _removeExpenses,
+                      ),
+                    )
+                  ])
+                : mainContent
+            : Row(
                 children: [
-                  Chart(expenses: _registeredExpenses),
+                  Expanded(child: Chart(expenses: _registeredExpenses)),
                   Expanded(
-                    child: ExpensesList(
-                      expenses: _registeredExpenses,
-                      deleteExpense: _removeExpenses,
-                    ),
-                  )
+                      child: ExpensesList(
+                        expenses: _registeredExpenses,
+                        deleteExpense: _removeExpenses,
+                      ),
+                    )
                 ],
-              )
-            : mainContent);
+              ));
   }
 }
